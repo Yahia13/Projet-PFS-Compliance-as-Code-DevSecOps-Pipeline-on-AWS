@@ -1,0 +1,51 @@
+# --------------------------------------------------------------------------
+# Fichiers Terraform
+# --------------------------------------------------------------------------
+# Le fichier d'état local et les sauvegardes
+*.tfstate
+*.tfstate.*
+# Le répertoire qui contient les plugins et le cache
+.terraform/
+# Fichiers d'historique de console (si non géré par backend distant)
+.terraform.lock.hcl
+# Fichier pour planifier les exécutions (peut contenir des secrets)
+*.tfplan
+
+# --------------------------------------------------------------------------
+# Fichiers sensibles ou binaires (Docker, Kubernetes)
+# --------------------------------------------------------------------------
+# Fichiers de secrets potentiels
+*.key
+*.pem
+*.p12
+*.kubeconfig # Ne jamais commiter le kubeconfig EKS généré
+
+# Dossier d'application (dépendances et build)
+**/node_modules/
+**/dist/
+**/venv/
+
+# --------------------------------------------------------------------------
+# Rapports et logs générés par Jenkins et les outils de Scan
+# --------------------------------------------------------------------------
+# Les rapports générés par les stages de scan (si non archivés ailleurs)
+ci/reports/
+# Tous les fichiers de log
+*.log
+
+# --------------------------------------------------------------------------
+# Fichiers spécifiques à l'IDE et au système d'exploitation
+# --------------------------------------------------------------------------
+
+# VS Code
+.vscode/
+
+# --------------------------------------------------------------------------
+# Fichiers Ansible
+# --------------------------------------------------------------------------
+# Fichiers de secrets dans Ansible Vault ou générés
+*.vault
+# Fichiers d'inventaire temporaires ou dynamiques
+.ansible/
+.aws/
+credentials
