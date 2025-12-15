@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.5.0"
+  required_version = ">= 1.6.0"
 
   required_providers {
     aws = {
@@ -11,5 +11,7 @@ terraform {
     bucket = "s3-bucket-pfs-backup-tfstate-projets"
     key = "terraform.tfstate"
     region = "eu-central-1"
+    encrypt = true
+
   }
 }
