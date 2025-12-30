@@ -1,0 +1,77 @@
+---
+- name: Configuration de la plateforme DevSecOps Complète
+  hosts: jenkins_server
+  become: true
+  vars:
+    trivy_version: "0.48.3"
+    tfsec_version: "v1.28.1"
+    kubescore_version: "1.18.0" # Version stable actuelle
+
+  tasks:
+    - name: Mise à jour du cache apt
+      apt: update_cache=yes
+
+    - name: Installation des paquets système
+      apt:
+        name: 
+          - openjdk-17-jdk
+          - docker.io
+          - python3-pip
+          - curl
+          - gnupg
+        state: present
+
+    # --- INSTALLATION JENKINS ---
+    - name: Installation Jenkins
+      block:
+        - name: Clé GPG Jenkins
+          apt_key:
+            url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+            state: present
+        - name: Depot Jenkins
+          apt_repository:
+            repo: deb https://pkg.jenkins.io/debian-stable binary/
+            state: present
+        - name: Install Jenkins
+          apt: name=jenkins state=present
+
+    # --- PERMISSIONS ---
+    - name: Ajouter jenkins au groupe docker
+      user:
+        name: jenkins
+        groups: docker
+        append: yes
+
+    # --- SCANNERS DE SÉCURITÉ & CONFORMITÉ ---
+
+    - name: Installer Checkov (Scanner IaC)
+      pip:
+        name: checkov
+        state: present
+        executable: pip3
+
+    - name: Installer tfsec (Scanner Terraform)
+      get_url:
+        url: "https://github.com/aquasecurity/tfsec/releases/download/{{ tfsec_version }}/tfsec-linux-amd64"
+        dest: /usr/local/bin/tfsec
+        mode: '0755'
+
+    - name: Installer Trivy (Scanner d'images)
+      shell: |
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v{{ trivy_version }}
+
+    - name: Installer kube-score (Analyse Statique Kubernetes)
+      get_url:
+        url: "https://github.com/zegl/kube-score/releases/download/v{{ kubescore_version }}/kube-score_{{ kubescore_version }}_linux_amd64"
+        dest: /usr/local/bin/kube-score
+        mode: '0755'
+
+    # --- OUTILS DE DÉPLOIEMENT ---
+    - name: Installer kubectl & Helm
+      shell: |
+        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+        install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+    - name: Redémarrer Jenkins
+      service: name=jenkins state=restarted
