@@ -10,7 +10,7 @@ resource "aws_vpc" "main_vpc" {
 // ---private subnets for EKS nodes and optionnally ec2 of jenkins ---
 resource "aws_subnet" "Private_subnet_1a" {
   vpc_id     = aws_vpc.main_vpc.id
-  cidr_block = "10.0.1.0/24"
+  cidr_block = "10.0.11.0/24"
   availability_zone = "${var.aws_region}a"
 
   tags = {
@@ -20,7 +20,7 @@ resource "aws_subnet" "Private_subnet_1a" {
 }
 resource "aws_subnet" "Private_subnet_1b" {
   vpc_id     = aws_vpc.main_vpc.id
-  cidr_block = "10.0.2.0/24"
+  cidr_block = "10.0.12.0/24"
   availability_zone = "${var.aws_region}b"
 
 
@@ -32,7 +32,7 @@ resource "aws_subnet" "Private_subnet_1b" {
 // ---public subnets for ALB and NAT gateways ---
 resource "aws_subnet" "Public_subnet_1a" {
     vpc_id = aws_vpc.main_vpc.id
-    cidr_block = "10.0.11.0/24"
+    cidr_block = "10.0.1.0/24"
     availability_zone = "${var.aws_region}a"
     map_public_ip_on_launch = true
 
@@ -45,7 +45,7 @@ resource "aws_subnet" "Public_subnet_1a" {
 
 resource "aws_subnet" "Public_subnet_1b" {
     vpc_id = aws_vpc.main_vpc.id
-    cidr_block = "10.0.12.0/24"
+    cidr_block = "10.0.2.0/24"
     availability_zone = "${var.aws_region}b"
     map_public_ip_on_launch = true
 
