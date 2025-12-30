@@ -7,6 +7,7 @@ resource "aws_vpc" "main_vpc" {
     Name = "${var.project_name}-vpc"
   }
 }
+
 // ---private subnets for EKS nodes and optionnally ec2 of jenkins ---
 resource "aws_subnet" "Private_subnet_1a" {
   vpc_id     = aws_vpc.main_vpc.id
