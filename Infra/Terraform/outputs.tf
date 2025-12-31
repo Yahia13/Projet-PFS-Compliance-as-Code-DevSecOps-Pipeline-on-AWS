@@ -1,12 +1,13 @@
-# Pour l'interface Web (Navigateur)
 output "jenkins_public_ip" {
-  value = aws_eip.instance_eip.public_ip
+  value       = module.jenkins_ec2.jenkins_public_ip
+  description = "Public IP of Jenkins (from module)"
 }
 
-# Pour Ansible (Communication interne)
 output "jenkins_private_ip" {
-  value = aws_instance.jenkins.private_ip
+  value       = module.jenkins_ec2.jenkins_private_ip
+  description = "Private IP of Jenkins (from module)"
 }
+
 
 # -------------------------
 # Security Group outputs
