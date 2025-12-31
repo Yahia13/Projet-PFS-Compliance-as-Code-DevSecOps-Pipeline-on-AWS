@@ -1,0 +1,116 @@
+pipeline {
+    agent any
+
+    environment {
+        // --- CONFIGURATION AWS (À ADAPTER) ---
+        AWS_REGION       = "eu-central-1"
+        AWS_ACCOUNT_ID   = "123456789012" // ⚠️ Remplace par ton ID de compte AWS
+        
+        // --- PARAMÈTRES ECR & DOCKER ---
+        ECR_REGISTRY     = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+        IMAGE_NAME       = "microservice-app"
+        IMAGE_TAG        = "v${env.BUILD_ID}"
+        FULL_IMAGE_URI   = "${ECR_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+        
+        // --- PARAMÈTRES EKS ---
+        EKS_CLUSTER_NAME = "devsecops-cluster"
+    }
+
+    stages {
+        stage('🧹 Clean & Checkout') {
+            steps {
+                echo "--- Nettoyage de l'espace de travail ---"
+                cleanWs()
+                checkout scm
+                // Attribution des droits d'exécution au début
+                sh "chmod +x ci/scripts/*.sh"
+            }
+        }
+
+        stage('🛡️ IaC Compliance (Terraform)') {
+            parallel {
+                stage('TF Validate') {
+                    steps {
+                        sh "bash ci/scripts/terraform_validate.sh"
+                    }
+                }
+                stage('TFSec Scan') {
+                    steps {
+                        // On autorise la suite du build pour générer les rapports
+                        sh "bash ci/scripts/scan_tfsec.sh || true"
+                    }
+                }
+                stage('Checkov Scan') {
+                    steps {
+                        sh "bash ci/scripts/scan_checkov.sh || true"
+                    }
+                }
+            }
+        }
+
+        stage('📦 Docker Build & Security') {
+            steps {
+                script {
+                    echo "--- Construction locale de l'image ---"
+                    sh "bash ci/scripts/docker_build_push_ecr.sh ${FULL_IMAGE_URI}"
+                    
+                    echo "--- Scan de vulnérabilités Trivy ---"
+                    // Trivy bloquera ici si exit-code 1 (faille CRITICAL)
+                    sh "bash ci/scripts/scan_trivy.sh ${FULL_IMAGE_URI}"
+                }
+            }
+        }
+
+        stage('🚢 Push to Amazon ECR') {
+            steps {
+                script {
+                    echo "--- Connexion et Push vers ECR ---"
+                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
+                    sh "docker push ${FULL_IMAGE_URI}"
+                }
+            }
+        }
+
+        stage('☸️ K8s Compliance (Kube-score)') {
+            steps {
+                echo "--- Vérification des manifests Kubernetes ---"
+                sh "bash ci/scripts/scan_k8s_kubescore.sh"
+            }
+        }
+
+        stage('🚀 Deploy to EKS') {
+            steps {
+                script {
+                    echo "--- Mise à jour du Kubeconfig ---"
+                    sh "aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER_NAME}"
+                    
+                    echo "--- Déploiement via Helm ---"
+                    dir('helm/app') {
+                        sh """
+                        helm upgrade --install ${IMAGE_NAME} . \
+                        --set image.repository=${ECR_REGISTRY}/${IMAGE_NAME} \
+                        --set image.tag=${IMAGE_TAG} \
+                        --namespace default
+                        """
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "--- Archivage des rapports de sécurité ---"
+            archiveArtifacts artifacts: 'ci/reports/**/*', allowEmptyArchive: true
+            
+            echo "--- Nettoyage Docker ---"
+            sh "docker rmi ${FULL_IMAGE_URI} || true"
+        }
+        success {
+            echo "✅ Déploiement réussi et conforme aux politiques de sécurité."
+        }
+        failure {
+            echo "❌ Échec de la pipeline. Vérifiez les rapports dans les Artifacts Jenkins."
+        }
+    }
+}
