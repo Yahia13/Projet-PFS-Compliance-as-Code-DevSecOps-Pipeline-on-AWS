@@ -1,10 +1,10 @@
 
 # Instance EC2 pour Ansible
 resource "aws_instance" "ansible_manager" {
-  ami                         = var.ami_id
+  ami                         = data.aws_ami.ubuntu.id
   instance_type               = "t3.micro" # Petite instance suffit pour Ansible
   subnet_id                   = var.subnet_id
-  vpc_security_group_ids      = [aws_security_group.ansible_sg.id]
+  vpc_security_group_ids      = var.security_group_ids
   key_name                    = var.key_name
   associate_public_ip_address = true
 

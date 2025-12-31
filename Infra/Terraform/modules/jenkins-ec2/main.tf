@@ -14,7 +14,7 @@ resource "aws_instance" "jenkins" {
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.instance_type
   subnet_id                   = var.subnet_id
-  vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
+  vpc_security_group_ids      = var.security_group_ids
   iam_instance_profile        = var.instance_profile_name
   private_ip = "10.0.1.100"
 

@@ -30,6 +30,7 @@ module "jenkins_ec2" {
 
   vpc_id    = module.vpc.vpc_id
   subnet_id = module.vpc.public_subnet_ids[0]
+  security_group_ids = [aws_security_group.jenkins_sg.id]
 
   instance_profile_name = module.iam.jenkins_instance_profile_name
 }
@@ -40,4 +41,6 @@ module "ansible_manager" {
   vpc_id       = module.vpc.vpc_id
   subnet_id    = module.vpc.public_subnets[0]
   ami_id       = data.aws_ami.ubuntu.id 
+    security_group_ids = [aws_security_group.ansible_sg.id]
+
 }

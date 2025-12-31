@@ -19,3 +19,7 @@ variable "instance_type" {
   type    = string
   default = "t3.medium" # t3.medium est un bon compromis pour Jenkins (2 vCPU, 4 Go RAM)
 }
+
+variable "security_group_ids" {
+  type = list(string)
+}
