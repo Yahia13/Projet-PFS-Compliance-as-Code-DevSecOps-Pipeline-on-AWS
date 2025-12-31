@@ -1,0 +1,6 @@
+---
+- name: Télécharger et installer Trivy
+  shell: |
+    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.48.3
+  args:
+    creates: /usr/local/bin/trivy

@@ -1,0 +1,6 @@
+---
+- name: Installer Checkov via Pip3
+  pip:
+    name: checkov
+    state: present
+    executable: pip3

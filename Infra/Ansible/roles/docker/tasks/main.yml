@@ -1,0 +1,17 @@
+---
+- name: Installer Docker Engine
+  apt:
+    name: docker.io
+    state: present
+
+- name: Assurer que Docker est démarré
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Ajouter jenkins au groupe docker
+  user:
+    name: jenkins
+    groups: docker
+    append: yes

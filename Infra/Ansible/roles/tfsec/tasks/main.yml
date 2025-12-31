@@ -1,0 +1,6 @@
+---
+- name: Installer tfsec
+  get_url:
+    url: "https://github.com/aquasecurity/tfsec/releases/download/v1.28.1/tfsec-linux-amd64"
+    dest: /usr/local/bin/tfsec
+    mode: '0755'
