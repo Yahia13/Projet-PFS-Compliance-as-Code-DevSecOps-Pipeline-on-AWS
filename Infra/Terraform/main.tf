@@ -40,7 +40,6 @@ module "ansible_manager" {
   project_name = var.project_name
   vpc_id       = module.vpc.vpc_id
   subnet_id    = module.vpc.public_subnets[0]
-  ami_id       = data.aws_ami.ubuntu.id 
-    security_group_ids = [aws_security_group.ansible_sg.id]
+  security_group_ids = [aws_security_group.ansible_sg.id]
 
 }
