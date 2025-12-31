@@ -17,6 +17,8 @@ resource "aws_subnet" "Private_subnet_1a" {
   tags = {
     Name = "${var.project_name}-private-subnet-1a"
     "kubernetes.io/role/internal-elb" = "1"
+    "kubernetes.io/cluster/${var.project_name}-cluster" = "shared"
+
   }
 }
 resource "aws_subnet" "Private_subnet_1b" {
@@ -28,6 +30,8 @@ resource "aws_subnet" "Private_subnet_1b" {
   tags = {
     Name = "${var.project_name}-private-subnet-1b"
     "kubernetes.io/role/internal-elb" = "1"
+    "kubernetes.io/cluster/${var.project_name}-cluster" = "shared"
+
   }
 }
 // ---public subnets for ALB and NAT gateways ---
@@ -40,6 +44,8 @@ resource "aws_subnet" "Public_subnet_1a" {
     tags = {
         Name = "${var.project_name}-public-subnet-1a"
         "kubernetes.io/role/elb" = "1"
+        "kubernetes.io/cluster/${var.project_name}-cluster" = "shared"
+
 
     }
 }
@@ -53,6 +59,8 @@ resource "aws_subnet" "Public_subnet_1b" {
     tags = {
         Name = "${var.project_name}-public-subnet-1b"
         "kubernetes.io/role/elb" = "1"
+        "kubernetes.io/cluster/${var.project_name}-cluster" = "shared"
+
 
     }
 }
@@ -84,7 +92,7 @@ resource "aws_eip" "eip_for_nat_1b" {
 #--- NAT gateways for private subnets ---
 resource "aws_nat_gateway" "nat_gw_1a" {
   allocation_id = aws_eip.eip_for_nat_1a.id
-  subnet_id     = aws_subnet.Private_subnet_1a.id
+  subnet_id     = aws_subnet.Public_subnet_1a.id
 
   tags = {
     Name = "gw NATa"
@@ -97,7 +105,7 @@ resource "aws_nat_gateway" "nat_gw_1a" {
 
 resource "aws_nat_gateway" "nat_gw_1b" {
   allocation_id = aws_eip.eip_for_nat_1b.id
-  subnet_id     = aws_subnet.Private_subnet_1b.id
+  subnet_id     = aws_subnet.Public_subnet_1b.id
 
   tags = {
     Name = "gw NATb"
