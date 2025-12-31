@@ -26,7 +26,7 @@ output "private_subnet_ids" {
 output "nat_gateway_ids" {
   description = "NAT Gateway IDs (one per AZ)"
   value       = [
-    aws_nat_gateway.eip_for_nat_1a.id,
-    aws_nat_gateway.eip_for_nat_1b.id
+    aws_nat_gateway.nat_gw_1a.id,
+    aws_nat_gateway.nat_gw_1b.id
   ]
 }
