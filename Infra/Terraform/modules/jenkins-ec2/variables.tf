@@ -17,5 +17,5 @@ variable "instance_profile_name" {
 
 variable "instance_type" {
   type    = string
-  default = "t3.small" # t3.small est un bon compromis pour Jenkins (2 vCPU, 2 Go RAM)
+  default = "t3.medium" # t3.medium est un bon compromis pour Jenkins (2 vCPU, 4 Go RAM)
 }

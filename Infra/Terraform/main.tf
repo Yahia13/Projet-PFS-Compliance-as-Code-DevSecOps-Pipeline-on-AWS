@@ -34,3 +34,11 @@ module "jenkins_ec2" {
 
   instance_profile_name = module.iam.jenkins_instance_profile_name
 }
+
+module "ansible_manager" {
+  source       = "./modules/ansible-manager"
+  project_name = var.project_name
+  vpc_id       = module.vpc.vpc_id
+  subnet_id    = module.vpc.public_subnets[0]
+  ami_id       = data.aws_ami.ubuntu.id 
+}

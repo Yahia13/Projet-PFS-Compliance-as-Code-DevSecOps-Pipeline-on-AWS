@@ -48,11 +48,16 @@ resource "aws_instance" "jenkins" {
   subnet_id                   = var.subnet_id
   vpc_security_group_ids      = [aws_security_group.jenkins_sg.id]
   iam_instance_profile        = var.instance_profile_name
-  associate_public_ip_address = true # Très important pour y accéder
+  private_ip = "10.0.1.100"
 
   root_block_device {
     volume_size = 20 # 20 Go suffisent pour commencer
   }
 
   tags = { Name = "${var.project_name}-jenkins-server" }
+}
+
+resource "aws_eip" "instance_eip" {
+  instance = aws_instance.jenkins.id
+  domain     = "vpc"
 }
