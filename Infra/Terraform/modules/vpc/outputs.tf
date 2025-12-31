@@ -1,7 +1,7 @@
 output "vpc_id" {
 
   description = "ID of the VPC"
-  value       = aws_vpc.this.id
+  value       = aws_vpc.main_vpc.id
 }
 
 # Public Subnets (for ALB, NAT, public EC2)
