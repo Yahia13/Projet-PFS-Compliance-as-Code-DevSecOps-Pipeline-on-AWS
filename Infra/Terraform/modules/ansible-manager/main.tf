@@ -1,4 +1,12 @@
-
+# Recherche de la dernière image Ubuntu (AMI)
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical (Ubuntu)
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
+  }
+}
 # Instance EC2 pour Ansible
 resource "aws_instance" "ansible_manager" {
   ami                         = data.aws_ami.ubuntu.id
