@@ -1,0 +1,6 @@
+workflow-aggregator
+git
+docker-workflow
+terraform
+pipeline-stage-view
+amazon-ecr
