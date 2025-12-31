@@ -31,3 +31,13 @@ output "eks_nodes_sg_id" {
   value       = aws_security_group.eks_nodes_sg.id
   description = "Security Group ID for EKS worker nodes"
 }
+
+output "audit_reports_bucket_name" {
+  description = "Le nom du bucket S3 créé pour les rapports d'audit"
+  value       = aws_s3_bucket.audit_reports.id
+}
+
+output "audit_reports_bucket_arn" {
+  description = "L'ARN du bucket (utile pour les politiques IAM)"
+  value       = aws_s3_bucket.audit_reports.arn
+}

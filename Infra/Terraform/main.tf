@@ -20,9 +20,17 @@ module "ecr" {
 }
 
 module "iam" {
-  source       = "./modules/iam"
-  project_name = var.project_name
+  source            = "./modules/iam"
+  project_name      = var.project_name
+  
+  # Tu passes l'ARN du bucket défini dans s3.tf
+  audit_bucket_arn  = aws_s3_bucket.audit_reports.arn
+  
+  # Tu passes le nom du rôle Jenkins (récupéré depuis le module jenkins_ec2 ou défini ici)
+  # Si ton module jenkins_ec2 crée le rôle, utilise :
+  jenkins_role_name = module.jenkins_ec2.role_name 
 }
+
 
 module "jenkins_ec2" {
   source       = "./modules/jenkins-ec2"
