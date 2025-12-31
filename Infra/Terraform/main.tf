@@ -14,7 +14,6 @@ module "eks" {
   node_role_arn    = module.iam.eks_nodes_role_arn
 }
 
-
 module "ecr" {
   source       = "./modules/ecr"
   project_name = var.project_name

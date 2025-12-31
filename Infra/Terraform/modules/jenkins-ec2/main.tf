@@ -1,35 +1,3 @@
-# 1. Le Groupe de Sécurité (Le Pare-feu de la machine)
-resource "aws_security_group" "jenkins_sg" {
-  name        = "${var.project_name}-jenkins-sg"
-  description = "Autoriser SSH et Jenkins"
-  vpc_id      = var.vpc_id
-
-  # Port 8080 : Interface Web de Jenkins
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] 
-  }
-
-  # Port 22 : Pour qu'Ansible puisse se connecter en SSH
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  # Autoriser toute sortie vers Internet (pour télécharger les outils)
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = { Name = "${var.project_name}-jenkins-sg" }
-}
 
 # 2. Recherche de la dernière image Ubuntu (AMI)
 data "aws_ami" "ubuntu" {
