@@ -20,7 +20,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
 }
 
 # ==========================================================
-# 2. RÔLE POUR LES NODES EKS (Les serveurs qui font tourner les conteneurs)
+# 2. RÔLE POUR LES NODES EKS (Les serveurs de calcul)
 # ==========================================================
 resource "aws_iam_role" "eks_nodes" {
   name = "${var.project_name}-eks-nodes-role"
@@ -35,7 +35,6 @@ resource "aws_iam_role" "eks_nodes" {
   })
 }
 
-# Attachement des politiques nécessaires pour que les nodes fonctionnent
 resource "aws_iam_role_policy_attachment" "nodes_worker" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
   role       = aws_iam_role.eks_nodes.name
@@ -52,7 +51,7 @@ resource "aws_iam_role_policy_attachment" "nodes_ecr" {
 }
 
 # ==========================================================
-# 3. RÔLE POUR JENKINS (Le serveur de build et de scan)
+# 3. RÔLE POUR JENKINS (Build, Scan & Deploy)
 # ==========================================================
 resource "aws_iam_role" "jenkins_role" {
   name = "${var.project_name}-jenkins-role"
@@ -67,15 +66,17 @@ resource "aws_iam_role" "jenkins_role" {
   })
 }
 
-# Politique spécifique pour Jenkins : Droit de pousser sur ECR et voir EKS
-resource "aws_iam_policy" "jenkins_policy" {
-  name        = "${var.project_name}-jenkins-policy"
-  description = "Permissions pour la pipeline DevSecOps"
+# Politique combinée : ECR + EKS + S3
+resource "aws_iam_policy" "jenkins_full_policy" {
+  name        = "${var.project_name}-jenkins-devsecops-policy"
+  description = "Permissions pour ECR, EKS et l'archivage S3 des rapports"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
+        Sid    = "AllowECRPush"
+        Effect = "Allow"
         Action = [
           "ecr:GetAuthorizationToken",
           "ecr:BatchCheckLayerAvailability",
@@ -84,28 +85,38 @@ resource "aws_iam_policy" "jenkins_policy" {
           "ecr:UploadLayerPart",
           "ecr:CompleteLayerUpload",
           "ecr:PutImage"
-        ],
-        Effect   = "Allow",
+        ]
         Resource = "*"
       },
       {
+        Sid    = "AllowEKSDescribe"
+        Effect = "Allow"
         Action = [
           "eks:DescribeCluster",
           "eks:ListClusters"
-        ],
-        Effect   = "Allow",
+        ]
         Resource = "*"
+      },
+      {
+        Sid    = "AllowS3AuditUpload"
+        Effect = "Allow"
+        Action = ["s3:PutObject", "s3:ListBucket"]
+        Resource = [
+          var.audit_bucket_arn,
+          "${var.audit_bucket_arn}/*"
+        ]
       }
     ]
   })
 }
 
-resource "aws_iam_role_policy_attachment" "jenkins_attach" {
+# Attachement unique
+resource "aws_iam_role_policy_attachment" "jenkins_attach_everything" {
   role       = aws_iam_role.jenkins_role.name
-  policy_arn = aws_iam_policy.jenkins_policy.arn
+  policy_arn = aws_iam_policy.jenkins_full_policy.arn
 }
 
-# Instance Profile : C'est ce qui permet d'attacher le rôle à l'instance EC2 Jenkins
+# Profil d'instance pour l'EC2 Jenkins
 resource "aws_iam_instance_profile" "jenkins_profile" {
   name = "${var.project_name}-jenkins-profile"
   role = aws_iam_role.jenkins_role.name

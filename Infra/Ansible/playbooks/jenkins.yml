@@ -1,0 +1,14 @@
+---
+- name: Configuration de la plateforme DevSecOps via Roles
+  hosts: jenkins_server
+  become: true
+  roles:
+    - docker
+    - jenkins
+    - awscli
+    - kubectl
+    - helm
+    - tfsec
+    - checkov
+    - trivy
+    - kube-score

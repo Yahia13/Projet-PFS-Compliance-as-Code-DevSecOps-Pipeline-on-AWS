@@ -1,0 +1,5 @@
+---
+- name: Redémarrer Jenkins
+  service:
+    name: jenkins
+    state: restarted---
