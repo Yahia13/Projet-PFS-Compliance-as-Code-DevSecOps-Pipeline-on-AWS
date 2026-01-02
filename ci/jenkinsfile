@@ -31,7 +31,9 @@ pipeline {
         stage('📦 Docker Build & Security') {
             steps {
                 script {
-                    sh "bash ci/scripts/docker_build_push_ecr.sh ${FULL_IMAGE_URI}"
+                    dir ('app/microservice') {
+                        sh "bash ci/scripts/docker_build_push_ecr.sh ${FULL_IMAGE_URI}"
+                    }
                     sh "bash ci/scripts/scan_trivy.sh ${FULL_IMAGE_URI}"
                 }
             }
