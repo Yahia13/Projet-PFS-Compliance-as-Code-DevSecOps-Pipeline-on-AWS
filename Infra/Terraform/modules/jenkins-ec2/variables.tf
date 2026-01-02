@@ -23,3 +23,6 @@ variable "instance_type" {
 variable "security_group_ids" {
   type = list(string)
 }
+
+variable "key_name" { default = "main_pfs_key" } # Nom de votre Key Pair sur AWS
+

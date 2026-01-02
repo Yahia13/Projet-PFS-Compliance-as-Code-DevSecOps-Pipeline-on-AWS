@@ -16,6 +16,8 @@ resource "aws_instance" "jenkins" {
   subnet_id                   = var.subnet_id
   vpc_security_group_ids      = var.security_group_ids
   iam_instance_profile        = var.instance_profile_name
+  key_name                    = var.key_name
+
   private_ip = "10.0.1.100"
 
   root_block_device {
