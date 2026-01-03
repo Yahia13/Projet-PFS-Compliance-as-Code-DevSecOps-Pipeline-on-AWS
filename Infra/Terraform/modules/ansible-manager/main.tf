@@ -15,10 +15,9 @@ resource "aws_instance" "ansible_manager" {
   vpc_security_group_ids      = var.security_group_ids
   key_name                    = var.key_name
   associate_public_ip_address = true
+  iam_instance_profile = var.instance_profile_name
   user_data = templatefile("${path.module}/userdata.sh", {
-  ansible_bucket = var.ansible_files_bucket_name.id
-  iam_instance_profile = var.instance_profile_name.id
-
+    ansible_bucket_name = var.ansible_files_bucket_name
 })
 
 
