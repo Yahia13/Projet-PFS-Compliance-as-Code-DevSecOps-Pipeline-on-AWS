@@ -41,3 +41,13 @@ output "audit_reports_bucket_arn" {
   description = "L'ARN du bucket (utile pour les politiques IAM)"
   value       = aws_s3_bucket.audit_reports.arn
 }
+
+output "ansible_files_bucket_name" {
+  description = "Le nom du bucket S3 créé pour les fichiers Ansible"
+  value       = aws_s3_bucket.ansible_files.id
+}
+
+output "ansible_files_bucket_arn" {
+  description = "L'ARN du bucket (utile pour les politiques IAM)"
+  value       = aws_s3_bucket.ansible_files.arn
+}

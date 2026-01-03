@@ -54,6 +54,7 @@ resource "aws_s3_object" "ansible_files" {
   }
 
   bucket = aws_s3_bucket.ansible_files.id
-  key    = "ansible/${each.key}"                       # preserve subfolders
-  source = "${path.root}/modules/ec2/ansible/${each.key}"
+  key    = each.key
+  source = "${path.root}/../Ansible/${each.key}"
+
 }

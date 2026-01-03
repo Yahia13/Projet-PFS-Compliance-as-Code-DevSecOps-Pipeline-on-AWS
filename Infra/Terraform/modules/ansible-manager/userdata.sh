@@ -28,6 +28,7 @@ apt-get install -y ansible git
 wget -q https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
 dpkg -i amazon-cloudwatch-agent.deb
 
+# CloudWatch config
 cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<EOF
 {
   "logs": {
@@ -46,11 +47,19 @@ cat > /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json <<EOF
 }
 EOF
 
+
+# Proper permissions (good practice)
+chmod 644 /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+
+# Start CloudWatch Agent
 /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
   -a fetch-config \
   -m ec2 \
   -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json \
   -s
+
+# Check if AWS CLI is installed
+aws --version
 
 # -----------------------------
 # Sync Ansible files from S3
@@ -59,9 +68,9 @@ ANSIBLE_DIR="/home/ubuntu/ansible"
 mkdir -p $ANSIBLE_DIR
 
 # 🔴 CHANGE ONLY THIS BUCKET NAME
-S3_BUCKET="pfs-ansible-files"
+S3_BUCKET="${ansible_bucket}"
 
-aws s3 sync s3://$S3_BUCKET $ANSIBLE_DIR
+aws s3 sync "s3://$S3_BUCKET" "$ANSIBLE_DIR"
 
 chown -R ubuntu:ubuntu $ANSIBLE_DIR
 
