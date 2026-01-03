@@ -68,7 +68,7 @@ ANSIBLE_DIR="/home/ubuntu/ansible"
 mkdir -p $ANSIBLE_DIR
 
 # 🔴 CHANGE ONLY THIS BUCKET NAME
-S3_BUCKET="${ansible_files_bucket_name}"
+S3_BUCKET="${ansible_bucket_name}"
 
 aws s3 sync "s3://$S3_BUCKET" "$ANSIBLE_DIR"
 
