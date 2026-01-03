@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         AWS_REGION       = "eu-central-1"
-        AWS_ACCOUNT_ID   = "123456789012" 
+        AWS_ACCOUNT_ID   = "352324843147" 
         ECR_REGISTRY     = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
         IMAGE_NAME       = "microservice-app"
         IMAGE_TAG        = "v${env.BUILD_ID}"
