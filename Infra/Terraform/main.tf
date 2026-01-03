@@ -44,6 +44,8 @@ module "jenkins_ec2" {
   security_group_ids = [aws_security_group.jenkins_sg.id]
 
   instance_profile_name = module.iam.jenkins_instance_profile_name
+
+  audit_reports_bucket_name  = aws_s3_bucket.audit_reports.id
 }
 
 module "ansible_manager" {
