@@ -21,3 +21,8 @@ variable "ansible_bucket" {
   type        = string
 }
 
+variable "instance_profile_name" {
+  description = "IAM instance profile name for Ansible EC2"
+  type        = string
+}
+

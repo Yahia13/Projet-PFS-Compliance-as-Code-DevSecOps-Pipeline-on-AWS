@@ -16,7 +16,9 @@ resource "aws_instance" "ansible_manager" {
   key_name                    = var.key_name
   associate_public_ip_address = true
   user_data = templatefile("${path.module}/userdata.sh", {
-  ansible_bucket = var.ansible_bucket
+  ansible_bucket = var.ansible_files.id
+  iam_instance_profile = var.instance_profile_name
+
 })
 
 
