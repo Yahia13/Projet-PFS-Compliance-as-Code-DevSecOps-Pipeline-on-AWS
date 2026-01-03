@@ -6,9 +6,12 @@ resource "random_id" "suffix" {
 
 resource "aws_s3_bucket" "audit_reports" {
   bucket = "devsecops-compliance-reports-${var.project_name}" 
+  force_destroy = true 
 
   tags = {
-    Description = "Stockage des rapports de scan (Trivy, Checkov, etc.)"
+  Description = "DevSecOps scan reports storage"
+  Name        = "DevSecOps Compliance Reports"
+  Environment = "Dev"
   }
 }
 
