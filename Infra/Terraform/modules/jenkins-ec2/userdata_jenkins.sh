@@ -53,7 +53,7 @@ chmod a+r /etc/apt/keyrings/docker.gpg
 CODENAME="$(. /etc/os-release; echo "$VERSION_CODENAME")"
 ARCH="$(dpkg --print-architecture)"
 
-echo "deb [arch=${ARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${CODENAME} stable" \
+echo "deb [arch=$${ARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $${CODENAME} stable" \
   | tee /etc/apt/sources.list.d/docker.list >/dev/null
 
 apt-get update -y
@@ -81,7 +81,7 @@ systemctl restart jenkins || true
 # kubectl (client)
 # -----------------------------
 KUBECTL_VERSION="$(curl -sL https://dl.k8s.io/release/stable.txt)"
-curl -sL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl
+curl -sL "https://dl.k8s.io/release/$${KUBECTL_VERSION}/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl
 chmod +x /usr/local/bin/kubectl
 
 # -----------------------------
