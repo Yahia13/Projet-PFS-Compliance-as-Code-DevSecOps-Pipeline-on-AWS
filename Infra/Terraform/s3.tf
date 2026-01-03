@@ -1,3 +1,7 @@
+resource "random_id" "suffix" {
+  byte_length = 4
+}
+
 # Ce bucket sera créé par "terraform apply" 
 
 resource "aws_s3_bucket" "audit_reports" {
