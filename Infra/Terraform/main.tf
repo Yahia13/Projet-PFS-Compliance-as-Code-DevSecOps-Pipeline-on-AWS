@@ -49,5 +49,5 @@ module "ansible_manager" {
   vpc_id       = module.vpc.vpc_id
   subnet_id    = module.vpc.public_subnet_ids[0]
   security_group_ids = [aws_security_group.ansible_sg.id]
-
+  ansible_bucket = aws_s3_bucket.ansible_bucket.id
 }
