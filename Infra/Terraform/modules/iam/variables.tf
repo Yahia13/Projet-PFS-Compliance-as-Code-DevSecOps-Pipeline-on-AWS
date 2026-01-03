@@ -1,10 +1,6 @@
 variable "project_name" {
   type = string
 }
-
-
-
-
 variable "audit_bucket_arn" {
   description = "L'ARN du bucket S3 pour les rapports (passé depuis la racine)"
   type        = string

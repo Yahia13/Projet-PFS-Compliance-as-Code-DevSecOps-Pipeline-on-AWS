@@ -16,7 +16,7 @@ variable "security_group_ids" {
   type = list(string)
 }
 
-variable "ansible_bucket" {
+variable "ansible_files_bucket_name" {
   description = "S3 bucket containing Ansible files"
   type        = string
 }

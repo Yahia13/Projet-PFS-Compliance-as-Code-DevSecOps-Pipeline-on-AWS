@@ -25,11 +25,13 @@ module "iam" {
   
   # Tu passes l'ARN du bucket défini dans s3.tf
   audit_bucket_arn         = aws_s3_bucket.audit_reports.arn
+  audit_bucket_name = aws_s3_bucket.audit_reports.id
   
   # Tu passes le nom du rôle Jenkins (récupéré depuis le module jenkins_ec2 ou défini ici)
   # Si ton module jenkins_ec2 crée le rôle, utilise :
   //jenkins_role_name = aws_s3_bucket.audit_reports.arn
   //ansible_manager_role = aws_s3_bucket.ansible_files.arn 
+  ansible_files_bucket_name = aws_s3_bucket.ansible_files.id
   ansible_files_bucket_arn = aws_s3_bucket.ansible_files.arn 
 
 }

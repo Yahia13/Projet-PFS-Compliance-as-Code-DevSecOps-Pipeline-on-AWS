@@ -123,7 +123,7 @@ resource "aws_iam_instance_profile" "jenkins_profile" {
 }
 
 # ==========================================================
-# 4. RÔLE POUR ANSIBLE MANAGER (sync S3 + run playbook + CW logs)
+# 4) ANSIBLE MANAGER ROLE (read ansible files from S3 + CW logs + describe EC2)
 # ==========================================================
 resource "aws_iam_role" "ansible_manager_role" {
   name = "${var.project_name}-ansible-manager-role"
@@ -138,37 +138,28 @@ resource "aws_iam_role" "ansible_manager_role" {
   })
 }
 
-# Policy: Read Ansible bucket + CloudWatch Logs + Describe Jenkins EC2
 resource "aws_iam_policy" "ansible_manager_policy" {
   name        = "${var.project_name}-ansible-manager-policy"
-  description = "Allow Ansible EC2 to read Ansible files from S3, send logs to CloudWatch, and discover Jenkins EC2 info"
+  description = "Ansible EC2: read Ansible files from S3 + CloudWatch logs + discover Jenkins EC2"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
-      # ---- S3 read only (bucket + objects) ----
+      # ---- S3 read Ansible bucket ----
       {
-        Sid    = "AllowReadAnsibleFilesBucket"
+        Sid    = "AllowListAnsibleBucket"
         Effect = "Allow"
-        Action = [
-          "s3:ListBucket"
-        ]
-        Resource = [
-          var.ansible_files_bucket_arn
-        ]
+        Action = ["s3:ListBucket"]
+        Resource = [var.ansible_files_bucket_arn]
       },
       {
-        Sid    = "AllowGetAnsibleFilesObjects"
+        Sid    = "AllowGetAnsibleObjects"
         Effect = "Allow"
-        Action = [
-          "s3:GetObject"
-        ]
-        Resource = [
-          "${var.ansible_files_bucket_arn}/*"
-        ]
+        Action = ["s3:GetObject"]
+        Resource = ["${var.ansible_files_bucket_arn}/*"]
       },
 
-      # ---- CloudWatch agent permissions (logs only) ----
+      # ---- CloudWatch logs ----
       {
         Sid    = "AllowCloudWatchLogs"
         Effect = "Allow"
@@ -181,10 +172,9 @@ resource "aws_iam_policy" "ansible_manager_policy" {
         Resource = "*"
       },
 
-      # ---- Optional: allow Ansible manager to discover Jenkins private/public IP by tags ----
-      # If you prefer to avoid this, you can remove this block and just use Terraform outputs in inventory.ini.
+      # ---- Discover Jenkins EC2 by tags (optional but useful) ----
       {
-        Sid    = "AllowDescribeEC2ForJenkinsDiscovery"
+        Sid    = "AllowDescribeEC2"
         Effect = "Allow"
         Action = [
           "ec2:DescribeInstances",
@@ -205,4 +195,3 @@ resource "aws_iam_instance_profile" "ansible_manager_profile" {
   name = "${var.project_name}-ansible-manager-profile"
   role = aws_iam_role.ansible_manager_role.name
 }
-
