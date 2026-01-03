@@ -26,3 +26,7 @@ variable "security_group_ids" {
 
 variable "key_name" { default = "main_pfs_key" } # Nom de votre Key Pair sur AWS
 
+variable "audit_reports_bucket_name" {
+  description = "Le nom du bucket S3 créé pour les rapports d'audit"
+  type        = string
+}
