@@ -20,6 +20,10 @@ resource "aws_instance" "jenkins" {
 
   private_ip = "10.0.1.100"
 
+  user_data = templatefile("${path.module}/userdata_jenkins.sh", {
+    audit_reports_bucket_name = var.audit_reports_bucket_name
+})
+
   root_block_device {
     volume_size = 20 # 20 Go suffisent pour commencer
   }
