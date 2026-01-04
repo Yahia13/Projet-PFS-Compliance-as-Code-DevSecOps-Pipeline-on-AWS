@@ -132,7 +132,7 @@ ls -lah "$ANSIBLE_DIR/playbooks" || true
 # Run playbook automatically
 # -----------------------------
 cd "$${ANSIBLE_DIR}"
-sudo -u ubuntu ansible-playbook -i inventory.ini playbooks/jenkins.yml
+sudo -u ubuntu ansible-playbook -i inventory.ini playbooks/jenkins.yml -vv
   
 
 echo "===== ANSIBLE MANAGER READY ====="
