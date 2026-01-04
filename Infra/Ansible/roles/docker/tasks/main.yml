@@ -1,69 +1,76 @@
 ---
-# roles/docker/tasks/main.yml
-
-- name: Check if Docker is already installed
+- name: Check Docker binary exists
   command: docker --version
   register: docker_check
   ignore_errors: true
   changed_when: false
 
-- name: Docker already installed, skip installation
-  debug:
-    msg: "Docker already installed on the host. Skipping Docker install."
+- name: Check Docker service state
+  command: systemctl is-active docker
+  register: docker_active
+  ignore_errors: true
+  changed_when: false
   when: docker_check.rc == 0
 
-# Install Docker CE only if Docker is NOT installed
-- name: Install prerequisites for Docker repository
-  apt:
-    name:
-      - ca-certificates
-      - curl
-      - gnupg
-      - lsb-release
-      - apt-transport-https
-    state: present
-    update_cache: yes
-  when: docker_check.rc != 0
+# If docker exists but service is not active, try to heal it
+- name: Reload systemd (safe)
+  command: systemctl daemon-reload
+  changed_when: false
+  when:
+    - docker_check.rc == 0
+    - docker_active.rc != 0
 
-- name: Add Docker official GPG key
-  shell: |
-    install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    chmod a+r /etc/apt/keyrings/docker.gpg
-  args:
-    creates: /etc/apt/keyrings/docker.gpg
-  when: docker_check.rc != 0
+- name: Restart containerd first (dependency)
+  service:
+    name: containerd
+    state: restarted
+  ignore_errors: true
+  when:
+    - docker_check.rc == 0
+    - docker_active.rc != 0
 
-- name: Add Docker repository
-  shell: |
-    CODENAME="$(. /etc/os-release; echo "$VERSION_CODENAME")"
-    ARCH="$(dpkg --print-architecture)"
-    echo "deb [arch=${ARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${CODENAME} stable" \
-      > /etc/apt/sources.list.d/docker.list
-  args:
-    creates: /etc/apt/sources.list.d/docker.list
-  when: docker_check.rc != 0
-
-- name: Install Docker CE + plugins
-  apt:
-    name:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-      - docker-buildx-plugin
-      - docker-compose-plugin
-    state: present
-    update_cache: yes
-  when: docker_check.rc != 0
-
-- name: Ensure Docker service is started and enabled
+- name: Restart docker with retries (do not fail immediately)
   service:
     name: docker
-    state: started
+    state: restarted
     enabled: yes
+  register: docker_restart
+  retries: 8
+  delay: 10
+  until: docker_restart is succeeded
+  ignore_errors: true
+  when:
+    - docker_check.rc == 0
+    - docker_active.rc != 0
 
+# Re-check after attempts
+- name: Verify Docker is running
+  command: systemctl is-active docker
+  register: docker_final
+  ignore_errors: true
+  changed_when: false
+  when: docker_check.rc == 0
+
+- name: Show docker status if still failing (debug only)
+  command: systemctl status docker --no-pager -l
+  register: docker_status
+  ignore_errors: true
+  changed_when: false
+  when:
+    - docker_check.rc == 0
+    - docker_final.rc != 0
+
+- name: Print docker status output
+  debug:
+    var: docker_status.stdout_lines
+  when:
+    - docker_check.rc == 0
+    - docker_final.rc != 0
+
+# Jenkins user docker group (safe even if docker temporarily down)
 - name: Add jenkins user to docker group
   user:
     name: jenkins
     groups: docker
     append: yes
+  ignore_errors: true

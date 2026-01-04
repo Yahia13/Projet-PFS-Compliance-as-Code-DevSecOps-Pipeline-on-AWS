@@ -22,6 +22,11 @@ apt-get install -y \
 apt-get install -y openjdk-17-jdk
 
 # -----------------------------
+# Additional utilities
+apt-get install -y unzip curl git jq netcat-openbsd
+
+
+# -----------------------------
 # AWS CLI v2 (ECR login / push, etc.)
 # -----------------------------
 curl -sS "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
