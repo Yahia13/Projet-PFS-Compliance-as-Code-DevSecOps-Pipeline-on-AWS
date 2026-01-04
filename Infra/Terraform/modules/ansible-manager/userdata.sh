@@ -61,6 +61,21 @@ chmod 644 /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
 # Check if AWS CLI is installed
 aws --version
 
+# Wait for Jenkins SSH to be reachable (avoid racing Jenkins userdata)
+JENKINS_IP="10.0.1.100"
+echo "⏳ Waiting for Jenkins SSH on $JENKINS_IP:22 ..."
+for i in {1..30}; do
+  nc -z "$JENKINS_IP" 22 && echo "✅ Jenkins SSH reachable." && break
+  echo "⏳ Still waiting for SSH... ($i/30)"
+  sleep 10
+done
+
+# If still not reachable, stop (otherwise playbook will fail anyway)
+if ! nc -z "$JENKINS_IP" 22; then
+  echo "❌ Jenkins SSH not reachable after timeout."
+  exit 1
+fi
+
 # -----------------------------
 # Sync Ansible files from S3
 # -----------------------------
@@ -106,11 +121,18 @@ if [ ! -s "$${KEY_PATH}" ]; then
   exit 1
 fi
 
+# quick sanity check (helps debugging in cloud-init logs)
+echo "📌 Ansible dir content:"
+ls -lah "$ANSIBLE_DIR"
+echo "📌 Playbooks:"
+ls -lah "$ANSIBLE_DIR/playbooks" || true
+
+
 # -----------------------------
 # Run playbook automatically
 # -----------------------------
 cd "$${ANSIBLE_DIR}"
-sudo -u ubuntu ansible-playbook -i inventory.ini playbooks/jenkins.yml \  || true
+sudo -u ubuntu ansible-playbook -i inventory.ini playbooks/jenkins.yml
   
 
 echo "===== ANSIBLE MANAGER READY ====="
