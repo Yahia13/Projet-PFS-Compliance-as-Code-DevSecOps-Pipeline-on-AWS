@@ -1,13 +1,31 @@
 ---
-- name: Ajouter la clé GPG Jenkins
-  apt_key:
-    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
-    state: present
+- name: Ensure keyrings directory exists
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
 
-- name: Ajouter le dépôt Jenkins
+- name: Download Jenkins keyring (ASCII)
+  get_url:
+    url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+    dest: /etc/apt/keyrings/jenkins-keyring.asc
+    mode: "0644"
+
+- name: Remove any old Jenkins repo entries (avoid Signed-By conflicts)
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/apt/sources.list.d/jenkins.list
+    - /etc/apt/sources.list.d/jenkins.list.save
+    - /etc/apt/sources.list.d/pkg.jenkins.io_debian-stable.list
+
+- name: Add Jenkins apt repo (with signed-by)
   apt_repository:
-    repo: deb https://pkg.jenkins.io/debian-stable binary/
+    repo: "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
     state: present
+    filename: jenkins
+    update_cache: yes
 
 - name: Installer Jenkins
   apt:
@@ -15,16 +33,25 @@
     state: present
     update_cache: yes
 
+- name: Ensure Jenkins plugins directory exists
+  file:
+    path: /var/lib/jenkins/plugins
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: "0755"
+  ignore_errors: yes
+
 - name: Télécharger Jenkins Plugin CLI
   get_url:
     url: https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/2.12.13/jenkins-plugin-manager-2.12.13.jar
     dest: /opt/jenkins-plugin-manager.jar
-    mode: '0644'
+    mode: "0644"
 
 - name: Installer les plugins depuis jenkins-plugins.txt
   command: >
-    java -jar /opt/jenkins-plugin-manager.jar 
-    --plugin-file {{ playbook_dir }}/../files/jenkins-plugins.txt 
+    java -jar /opt/jenkins-plugin-manager.jar
+    --plugin-file {{ playbook_dir }}/../files/jenkins-plugins.txt
     --plugin-download-directory /var/lib/jenkins/plugins
   notify: Redémarrer Jenkins
-  ignore_errors: yes # Utile si Jenkins n'a pas encore créé ses dossiers
+  ignore_errors: yes
