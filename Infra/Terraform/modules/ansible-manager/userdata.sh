@@ -74,13 +74,16 @@ aws s3 sync "s3://$S3_BUCKET" "$ANSIBLE_DIR"
 
 chown -R ubuntu:ubuntu $ANSIBLE_DIR
 
-# Fetch SSH key from SSM
-KEY_PATH="/home/ubuntu/.ssh/main-key.pem"
+# -----------------------------
+# Fetch SSH key from SSM (keep REAL filename)
+# -----------------------------
+SSH_DIR="/home/ubuntu/.ssh"
+KEY_PATH="${SSH_DIR}/main_pfs_key.pem"     # ✅ EXACT name
 SSM_PARAM="/pfs/ansible/ssh_key"
 
-mkdir -p /home/ubuntu/.ssh
-chown -R ubuntu:ubuntu /home/ubuntu/.ssh
-chmod 700 /home/ubuntu/.ssh
+mkdir -p "$SSH_DIR"
+chown ubuntu:ubuntu "$SSH_DIR"
+chmod 700 "$SSH_DIR"
 
 for i in {1..10}; do
   aws ssm get-parameter --name "$SSM_PARAM" --with-decryption \
@@ -89,26 +92,25 @@ for i in {1..10}; do
   if [ -s "$KEY_PATH" ]; then
     chown ubuntu:ubuntu "$KEY_PATH"
     chmod 600 "$KEY_PATH"
-    echo "✅ SSH key ready."
+    echo "✅ SSH key ready at $KEY_PATH"
     break
   fi
 
-  echo "⏳ SSH key not ready, retry..."
+  echo "⏳ SSH key not ready, retrying..."
   rm -f "$KEY_PATH"
   sleep 5
 done
 
 if [ ! -s "$KEY_PATH" ]; then
-  echo "❌ Failed to get SSH key from SSM."
+  echo "❌ Failed to fetch SSH key from SSM"
   exit 1
 fi
 
 
 # -----------------------------
-# Run Ansible Playbook
+# Run playbook automatically
 # -----------------------------
-cd $ANSIBLE_DIR
-
+cd "$ANSIBLE_DIR"
 sudo -u ubuntu ansible-playbook -i inventory.ini playbooks/jenkins.yml \
   -u ubuntu --private-key "$KEY_PATH"
 

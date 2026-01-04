@@ -186,9 +186,18 @@ resource "aws_iam_policy" "ansible_manager_policy" {
       {
         Sid    = "AllowReadSSHKeyFromSSM"
         Effect = "Allow"
-        Action = ["ssm:GetParameter"]
+        Action = [
+          "ssm:GetParameter",
+          "ssm:GetParameters"
+        ]
         Resource = var.ansible_ssh_key_param_arn
-      }
+      },
+      {
+        Sid    = "AllowDecryptSSMParameter"
+        Effect = "Allow"
+        Action = ["kms:Decrypt"]
+        Resource = "*"
+      } 
 
     ]
   })
