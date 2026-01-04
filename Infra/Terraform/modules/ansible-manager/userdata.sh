@@ -111,6 +111,6 @@ fi
 # -----------------------------
 cd "$${ANSIBLE_DIR}"
 sudo -u ubuntu ansible-playbook -i inventory.ini playbooks/jenkins.yml \
-  -u ubuntu --private-key "$${KEY_PATH}"
+  
 
 echo "===== ANSIBLE MANAGER READY ====="
