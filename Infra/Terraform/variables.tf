@@ -5,3 +5,8 @@ variable "project_name" {
   type        = string
   default     = "pfs-compliance-as-code"
 }
+
+variable "ansible_ssh_private_key_pem" {
+  type      = string
+  sensitive = true
+}

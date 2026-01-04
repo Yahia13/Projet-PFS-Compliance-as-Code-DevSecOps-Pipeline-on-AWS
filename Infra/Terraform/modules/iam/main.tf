@@ -181,7 +181,15 @@ resource "aws_iam_policy" "ansible_manager_policy" {
           "ec2:DescribeTags"
         ]
         Resource = "*"
+      },
+      # ---- Read SSH Key from SSM Parameter Store ----
+      {
+        Sid    = "AllowReadSSHKeyFromSSM"
+        Effect = "Allow"
+        Action = ["ssm:GetParameter"]
+        Resource = var.ansible_ssh_key_param_arn
       }
+
     ]
   })
 }

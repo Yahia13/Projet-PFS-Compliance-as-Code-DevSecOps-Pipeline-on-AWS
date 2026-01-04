@@ -32,6 +32,9 @@ module "iam" {
   //ansible_manager_role = aws_s3_bucket.ansible_files.arn 
   ansible_files_bucket_arn = aws_s3_bucket.ansible_files.arn 
 
+  ansible_ssh_key_param_arn = aws_ssm_parameter.ansible_ssh_key.arn
+
+
 }
 
 

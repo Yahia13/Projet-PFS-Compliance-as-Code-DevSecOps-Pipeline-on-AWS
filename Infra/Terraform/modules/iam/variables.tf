@@ -10,3 +10,5 @@ variable "ansible_files_bucket_arn" {
   description = "ARN of the S3 bucket that contains Ansible files"
   type        = string
 }
+
+variable "ansible_ssh_key_param_arn" { type = string }
