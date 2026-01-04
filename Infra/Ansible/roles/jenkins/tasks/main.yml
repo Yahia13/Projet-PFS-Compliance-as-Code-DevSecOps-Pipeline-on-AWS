@@ -42,6 +42,13 @@
     mode: "0755"
   ignore_errors: yes
 
+- name: Install Java (required for plugin manager)
+  apt:
+    name: temurin-17-jre
+    state: present
+    update_cache: yes
+  ignore_errors: yes
+
 - name: Télécharger Jenkins Plugin CLI
   get_url:
     url: https://github.com/jenkinsci/plugin-installation-manager-tool/releases/download/2.12.13/jenkins-plugin-manager-2.12.13.jar
