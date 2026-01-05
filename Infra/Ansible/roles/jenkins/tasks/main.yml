@@ -39,6 +39,13 @@
     state: present
     update_cache: yes
 
+- name: Disable Jenkins setup wizard
+  lineinfile:
+    path: /etc/default/jenkins
+    regexp: '^JAVA_ARGS='
+    line: 'JAVA_ARGS="-Djenkins.install.runSetupWizard=false"'
+    create: yes
+
 - name: Ensure Jenkins service is started and enabled
   service:
     name: jenkins
@@ -92,11 +99,3 @@
     recurse: yes
     owner: jenkins
     group: jenkins
-
-- name: Disable Jenkins setup wizard
-  lineinfile:
-    path: /etc/default/jenkins
-    regexp: '^JAVA_ARGS='
-    line: 'JAVA_ARGS="-Djenkins.install.runSetupWizard=false"'
-    create: yes
-  notify: Redémarrer Jenkins
