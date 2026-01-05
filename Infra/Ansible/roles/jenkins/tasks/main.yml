@@ -84,3 +84,11 @@
     owner: jenkins
     group: jenkins
     mode: "0644"
+
+- name: Disable Jenkins setup wizard
+  lineinfile:
+    path: /etc/default/jenkins
+    regexp: '^JAVA_ARGS='
+    line: 'JAVA_ARGS="-Djenkins.install.runSetupWizard=false"'
+    create: yes
+  notify: Redémarrer Jenkins

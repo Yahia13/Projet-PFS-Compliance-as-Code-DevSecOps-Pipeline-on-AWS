@@ -100,5 +100,9 @@ curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 |
 systemctl enable jenkins
 systemctl restart jenkins
 
+sudo chown -R jenkins:jenkins /var/lib/jenkins/plugins
+sudo systemctl restart jenkins
+
+
 echo "=== Jenkins EC2 userdata: done ==="
 echo "Jenkins should be on port 8080."
