@@ -20,6 +20,12 @@
     - /etc/apt/sources.list.d/jenkins.list.save
     - /etc/apt/sources.list.d/pkg.jenkins.io_debian-stable.list
 
+- name: Install Java 17 (Ubuntu package)
+  apt:
+    name: openjdk-17-jre-headless
+    state: present
+    update_cache: yes
+
 - name: Add Jenkins apt repo (with signed-by)
   apt_repository:
     repo: "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
@@ -39,7 +45,6 @@
     state: started
     enabled: yes
 
-
 - name: Ensure Jenkins plugins directory exists
   file:
     path: /var/lib/jenkins/plugins
@@ -47,13 +52,6 @@
     owner: jenkins
     group: jenkins
     mode: "0755"
-  ignore_errors: yes
-
-- name: Install Java 17 (Ubuntu package)
-  apt:
-    name: openjdk-17-jre-headless
-    state: present
-    update_cache: yes
 
 - name: Télécharger Jenkins Plugin CLI
   get_url:
@@ -72,6 +70,17 @@
 - name: Install Jenkins plugins
   command: >
     java -jar /opt/jenkins-plugin-manager.jar
+    --war /usr/share/java/jenkins.war
     --plugin-file /tmp/jenkins-plugins.txt
     --plugin-download-directory /var/lib/jenkins/plugins
+  args:
+    creates: /var/lib/jenkins/plugins/.plugins_installed
   notify: Redémarrer Jenkins
+
+- name: Mark plugins installed (idempotency flag)
+  file:
+    path: /var/lib/jenkins/plugins/.plugins_installed
+    state: touch
+    owner: jenkins
+    group: jenkins
+    mode: "0644"
