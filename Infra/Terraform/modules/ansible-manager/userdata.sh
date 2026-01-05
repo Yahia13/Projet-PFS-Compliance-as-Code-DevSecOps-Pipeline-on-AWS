@@ -85,7 +85,7 @@ mkdir -p $ANSIBLE_DIR
 # 🔴 CHANGE ONLY THIS BUCKET NAME
 S3_BUCKET="${ansible_bucket_name}"
 
-aws s3 sync "s3://$S3_BUCKET" "$ANSIBLE_DIR"
+aws s3 sync "s3://$S3_BUCKET" "$ANSIBLE_DIR/"
 
 chown -R ubuntu:ubuntu $ANSIBLE_DIR
 
@@ -135,4 +135,6 @@ cd "$${ANSIBLE_DIR}"
 sudo -u ubuntu ansible-playbook -i inventory.ini playbooks/jenkins.yml -vv
   
 
+
 echo "===== ANSIBLE MANAGER READY ====="
+

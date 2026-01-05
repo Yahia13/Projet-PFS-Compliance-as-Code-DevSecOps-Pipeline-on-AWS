@@ -61,10 +61,17 @@
     dest: /opt/jenkins-plugin-manager.jar
     mode: "0644"
 
-- name: Installer les plugins depuis jenkins-plugins.txt
+- name: Copy Jenkins plugins list to Jenkins node
+  copy:
+    src: jenkins-plugins.txt
+    dest: /tmp/jenkins-plugins.txt
+    owner: jenkins
+    group: jenkins
+    mode: "0644"
+
+- name: Install Jenkins plugins
   command: >
     java -jar /opt/jenkins-plugin-manager.jar
-    --plugin-file /home/ubuntu/ansible/files/jenkins-plugins.txt
+    --plugin-file /tmp/jenkins-plugins.txt
     --plugin-download-directory /var/lib/jenkins/plugins
   notify: Redémarrer Jenkins
-   
