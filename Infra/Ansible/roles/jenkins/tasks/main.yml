@@ -85,6 +85,14 @@
     group: jenkins
     mode: "0644"
 
+- name: Ensure plugins ownership is jenkins
+  file:
+    path: /var/lib/jenkins/plugins
+    state: directory
+    recurse: yes
+    owner: jenkins
+    group: jenkins
+
 - name: Disable Jenkins setup wizard
   lineinfile:
     path: /etc/default/jenkins
