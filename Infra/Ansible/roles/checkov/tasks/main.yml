@@ -1,6 +1,12 @@
 ---
+- name: Install pip3
+  apt:
+    name: python3-pip
+    state: present
+    update_cache: yes
+
 - name: Installer Checkov via Pip3
   pip:
     name: checkov
-    state: present
     executable: pip3
+    state: present

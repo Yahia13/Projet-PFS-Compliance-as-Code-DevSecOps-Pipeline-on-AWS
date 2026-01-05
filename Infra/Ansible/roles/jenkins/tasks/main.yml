@@ -33,6 +33,13 @@
     state: present
     update_cache: yes
 
+- name: Ensure Jenkins service is started and enabled
+  service:
+    name: jenkins
+    state: started
+    enabled: yes
+
+
 - name: Ensure Jenkins plugins directory exists
   file:
     path: /var/lib/jenkins/plugins
@@ -42,12 +49,11 @@
     mode: "0755"
   ignore_errors: yes
 
-- name: Install Java (required for plugin manager)
+- name: Install Java 17 (Ubuntu package)
   apt:
-    name: temurin-17-jre
+    name: openjdk-17-jre-headless
     state: present
     update_cache: yes
-  ignore_errors: yes
 
 - name: Télécharger Jenkins Plugin CLI
   get_url:
@@ -58,7 +64,7 @@
 - name: Installer les plugins depuis jenkins-plugins.txt
   command: >
     java -jar /opt/jenkins-plugin-manager.jar
-    --plugin-file {{ playbook_dir }}/../files/jenkins-plugins.txt
+    --plugin-file /home/ubuntu/ansible/files/jenkins-plugins.txt
     --plugin-download-directory /var/lib/jenkins/plugins
   notify: Redémarrer Jenkins
-  ignore_errors: yes
+   
