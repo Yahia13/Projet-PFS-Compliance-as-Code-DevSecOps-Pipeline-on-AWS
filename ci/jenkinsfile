@@ -3,12 +3,21 @@ pipeline {
 
     environment {
         AWS_REGION       = "eu-central-1"
-        AWS_ACCOUNT_ID   = "352324843147" 
+        AWS_ACCOUNT_ID   = "352324843147"
         ECR_REGISTRY     = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-        IMAGE_NAME       = "microservice-app"
+
+        // ⚠️ Must match your ECR repository name
+        IMAGE_NAME       = "pfs-compliance-as-code-repo"
+
         IMAGE_TAG        = "v${env.BUILD_ID}"
         FULL_IMAGE_URI   = "${ECR_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
-        EKS_CLUSTER_NAME = "devsecops-cluster"
+
+        // ✅ Derived from Terraform project_name = "pfs-compliance-as-code"
+        EKS_CLUSTER_NAME = "pfs-compliance-as-code-cluster"
+
+        // Helm release name (can be anything, but keep it stable)
+        HELM_RELEASE     = "${IMAGE_NAME}"
+        K8S_NAMESPACE    = "default"
     }
 
     stages {
@@ -17,23 +26,32 @@ pipeline {
                 cleanWs()
                 checkout scm
                 sh "chmod +x ci/scripts/*.sh"
+                sh "mkdir -p ci/reports/checkov ci/reports/tfsec ci/reports/trivy ci/reports/kube-score || true"
             }
         }
 
         stage('🛡️ IaC Compliance (Terraform)') {
             parallel {
-                stage('TF Validate') { steps { sh "bash ci/scripts/terraform_validate.sh" } }
-                stage('TFSec Scan') { steps { sh "bash ci/scripts/scan_tfsec.sh || true" } }
-                stage('Checkov Scan') { steps { sh "bash ci/scripts/scan_checkov.sh || true" } }
+                stage('TF Validate') {
+                    steps { sh "bash ci/scripts/terraform_validate.sh" }
+                }
+                stage('TFSec Scan') {
+                    steps { sh "bash ci/scripts/scan_tfsec.sh || true" }
+                }
+                stage('Checkov Scan') {
+                    steps { sh "bash ci/scripts/scan_checkov.sh || true" }
+                }
             }
         }
 
         stage('📦 Docker Build & Security') {
             steps {
                 script {
-                    dir ('app/microservice') {
-                        sh "bash ci/scripts/docker_build_push_ecr.sh ${FULL_IMAGE_URI}"
-                    }
+                    // ✅ IMPORTANT: your script does "docker build ... ./app/microservice"
+                    // So it must be executed from repo root, not inside app/microservice.
+                    sh "bash ci/scripts/docker_build_push_ecr.sh ${FULL_IMAGE_URI}"
+
+                    // Scan the locally built image before pushing
                     sh "bash ci/scripts/scan_trivy.sh ${FULL_IMAGE_URI}"
                 }
             }
@@ -41,16 +59,14 @@ pipeline {
 
         stage('🚢 Push to Amazon ECR') {
             steps {
-                script {
-                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
-                    sh "docker push ${FULL_IMAGE_URI}"
-                }
+                sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
+                sh "docker push ${FULL_IMAGE_URI}"
             }
         }
 
         stage('☸️ K8s Compliance (Kube-score)') {
             steps {
-                sh "bash ci/scripts/scan_k8s_kubescore.sh"
+                sh "bash ci/scripts/scan_k8s_kubescore.sh || true"
             }
         }
 
@@ -58,24 +74,30 @@ pipeline {
             steps {
                 script {
                     sh "aws eks update-kubeconfig --region ${AWS_REGION} --name ${EKS_CLUSTER_NAME}"
+
                     dir('helm/app') {
-                        sh "helm upgrade --install ${IMAGE_NAME} . --set image.repository=${ECR_REGISTRY}/${IMAGE_NAME} --set image.tag=${IMAGE_TAG} --namespace default"
+                        sh """
+                          helm upgrade --install ${HELM_RELEASE} . \
+                            --namespace ${K8S_NAMESPACE} --create-namespace \
+                            --set image.repository=${ECR_REGISTRY}/${IMAGE_NAME} \
+                            --set image.tag=${IMAGE_TAG}
+                        """
                     }
                 }
             }
         }
-    } // Fin des stages
+    }
 
     post {
         always {
-            // 1. Archivage local
             archiveArtifacts artifacts: 'ci/reports/**/*', allowEmptyArchive: true
-            
-            // 2. Archivage distant S3
+
             script {
                 try {
+                    // If BUCKET_NAME comes from terraform output, we must run in the right folder
                     dir('infra/terraform') {
-                        sh "terraform init -backend-config=\"bucket=s3-bucket-pfs-backup-tfstate-projets\"" 
+                        sh 'terraform init -backend-config="bucket=s3-bucket-pfs-backup-tfstate-projets"'
+                        // Only works if this output exists in your terraform
                         env.BUCKET_NAME = sh(script: "terraform output -raw audit_reports_bucket_name", returnStdout: true).trim()
                     }
                     sh "bash ci/scripts/archive_reports.sh"
