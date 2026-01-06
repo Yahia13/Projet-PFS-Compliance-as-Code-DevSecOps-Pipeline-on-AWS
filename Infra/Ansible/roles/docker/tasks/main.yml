@@ -67,6 +67,12 @@
     - docker_check.rc == 0
     - docker_final.rc != 0
 
+# This prevents: "Group docker does not exist"
+- name: Ensure docker group exists
+  group:
+    name: docker
+    state: present
+
 # Jenkins user docker group (safe even if docker temporarily down)
 - name: Add jenkins user to docker group
   user:
