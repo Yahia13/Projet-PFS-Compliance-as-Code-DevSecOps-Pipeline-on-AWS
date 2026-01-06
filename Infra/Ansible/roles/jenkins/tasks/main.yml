@@ -151,6 +151,15 @@
     mode: "0644"
   notify: Redémarrer Jenkins
 
+- name: Create Pipeline job automatically (init.groovy.d)
+  copy:
+    src: 03-create-pipeline-job.groovy
+    dest: /var/lib/jenkins/init.groovy.d/03-create-pipeline-job.groovy
+    owner: jenkins
+    group: jenkins
+    mode: "0644"
+  notify: Redémarrer Jenkins
+
 
 # Final: ensure Jenkins is running at the end
 - name: Ensure Jenkins service is started and enabled
