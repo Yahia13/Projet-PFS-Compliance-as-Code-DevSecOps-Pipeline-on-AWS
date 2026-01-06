@@ -160,6 +160,16 @@
     mode: "0644"
   notify: Redémarrer Jenkins
 
+- name: Configure Git tool in Jenkins
+  copy:
+    src: 04-configure-git-tool.groovy
+    dest: /var/lib/jenkins/init.groovy.d/04-configure-git-tool.groovy
+    owner: jenkins
+    group: jenkins
+    mode: "0644"
+  notify: Redémarrer Jenkins
+
+
 
 # Final: ensure Jenkins is running at the end
 - name: Ensure Jenkins service is started and enabled
