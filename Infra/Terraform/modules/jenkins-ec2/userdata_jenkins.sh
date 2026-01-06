@@ -61,8 +61,17 @@ apt-get update -y
 apt-get install -y jenkins
 
 # -----------------------------
-# Docker CE + buildx (NO docker compose)
+# Docker CE + buildx (FORCE UPGRADE)  ✅
 # -----------------------------
+
+# Remove any potentially old/conflicting Docker packages first
+apt-get remove -y docker docker-engine docker.io containerd runc docker-compose docker-compose-plugin podman-docker || true
+apt-get purge  -y docker docker-engine docker.io containerd runc docker-compose docker-compose-plugin podman-docker || true
+apt-get autoremove -y || true
+rm -f /etc/apt/sources.list.d/docker.list || true
+rm -f /etc/apt/keyrings/docker.gpg || true
+
+# Docker official repo
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
   | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -75,7 +84,10 @@ echo "deb [arch=$${ARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://downloa
   | tee /etc/apt/sources.list.d/docker.list >/dev/null
 
 apt-get update -y
+
+# Force install/upgrade to latest from Docker repo
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
+apt-get install -y --only-upgrade docker-ce docker-ce-cli containerd.io docker-buildx-plugin || true
 
 # Enable BuildKit by default
 mkdir -p /etc/docker
@@ -85,15 +97,21 @@ cat >/etc/docker/daemon.json <<'JSON'
 }
 JSON
 
-# Let Jenkins run docker
-sudo usermod -aG docker jenkins
+# Ensure docker group exists + add jenkins
+getent group docker || groupadd docker
+usermod -aG docker jenkins
 
-sudo systemctl enable docker
-sudo systemctl daemon-reload
-sudo systemctl restart docker
+systemctl daemon-reload
+systemctl enable docker
+systemctl restart docker
 
-# Optional: make docker usable without logout/login for Jenkins
-sudo systemctl restart jenkins || true
+# Make sure Jenkins picks up docker group membership
+systemctl restart jenkins || true
+
+# Quick debug in cloud-init logs
+docker version || true
+docker info || true
+
 
 # -----------------------------
 # kubectl (client)
