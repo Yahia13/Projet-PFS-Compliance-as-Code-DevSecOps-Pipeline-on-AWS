@@ -142,6 +142,16 @@
     owner: jenkins
     group: jenkins
 
+- name: Create Jenkins admin user via Groovy init
+  copy:
+    src: 02-create-admin-user.groovy
+    dest: /var/lib/jenkins/init.groovy.d/02-create-admin-user.groovy
+    owner: jenkins
+    group: jenkins
+    mode: "0644"
+  notify: Redémarrer Jenkins
+
+
 # Final: ensure Jenkins is running at the end
 - name: Ensure Jenkins service is started and enabled
   service:
