@@ -1,6 +1,27 @@
 ---
-- name: Télécharger et installer Trivy
+- name: Remove old Trivy if installed via apt (avoid API mismatch)
+  apt:
+    name: trivy
+    state: absent
+  ignore_errors: true
+
+- name: Install Trivy (official installer, pinned version)
   shell: |
-    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.48.3
+    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh \
+    | sh -s -- -b /usr/local/bin v0.48.3
   args:
     creates: /usr/local/bin/trivy
+
+- name: Ensure Trivy binary is executable
+  file:
+    path: /usr/local/bin/trivy
+    mode: "0755"
+
+- name: Verify Trivy installation
+  command: trivy --version
+  register: trivy_version
+  changed_when: false
+
+- name: Show Trivy version
+  debug:
+    var: trivy_version.stdout
