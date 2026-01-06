@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
 echo "--- 🛠️ Validation syntaxique de Terraform ---"
-cd infra/terraform
+cd Infra/Terraform
 terraform init -backend=false
 terraform validate

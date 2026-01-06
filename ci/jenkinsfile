@@ -95,7 +95,7 @@ pipeline {
             script {
                 try {
                     // If BUCKET_NAME comes from terraform output, we must run in the right folder
-                    dir('infra/terraform') {
+                    dir('Infra/Terraform') {
                         sh 'terraform init -backend-config="bucket=s3-bucket-pfs-backup-tfstate-projets"'
                         // Only works if this output exists in your terraform
                         env.BUCKET_NAME = sh(script: "terraform output -raw audit_reports_bucket_name", returnStdout: true).trim()

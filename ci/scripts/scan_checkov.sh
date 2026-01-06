@@ -3,7 +3,7 @@ echo "###############################"
 echo "# Lancement de Checkov (IaC)  #"
 echo "###############################"
 
-checkov -d ./infra/terraform \
+checkov -d ./Infra/Terraform \
     --output cli \
     --output json --soft-fail \
     > ./ci/reports/checkov/checkov-report.json
