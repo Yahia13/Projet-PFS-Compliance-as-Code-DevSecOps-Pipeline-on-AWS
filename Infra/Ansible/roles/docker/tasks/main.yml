@@ -74,3 +74,13 @@
     groups: docker
     append: yes
   ignore_errors: true
+
+# Ensure docker socket perms so Jenkins can talk to Docker daemon
+- name: Ensure docker socket permissions
+  file:
+    path: /var/run/docker.sock
+    owner: root
+    group: docker
+    mode: "0660"
+  ignore_errors: true
+  when: docker_check.rc == 0
