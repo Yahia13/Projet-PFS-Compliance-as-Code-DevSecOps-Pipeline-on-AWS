@@ -61,17 +61,15 @@ apt-get update -y
 apt-get install -y jenkins
 
 # -----------------------------
-# Docker CE + buildx (FORCE UPGRADE)  ✅
+# Docker CE + buildx (FORCE upgrade)
 # -----------------------------
 
-# Remove any potentially old/conflicting Docker packages first
-apt-get remove -y docker docker-engine docker.io containerd runc docker-compose docker-compose-plugin podman-docker || true
-apt-get purge  -y docker docker-engine docker.io containerd runc docker-compose docker-compose-plugin podman-docker || true
+# 1) Remove old docker packages (very important)
+apt-get remove -y docker docker-engine docker.io containerd runc || true
+apt-get purge -y docker docker-engine docker.io containerd runc || true
 apt-get autoremove -y || true
-rm -f /etc/apt/sources.list.d/docker.list || true
-rm -f /etc/apt/keyrings/docker.gpg || true
 
-# Docker official repo
+# 2) Install Docker official repo
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
   | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
@@ -81,22 +79,20 @@ CODENAME="$(. /etc/os-release; echo "$VERSION_CODENAME")"
 ARCH="$(dpkg --print-architecture)"
 
 echo "deb [arch=$${ARCH} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $${CODENAME} stable" \
-  | tee /etc/apt/sources.list.d/docker.list >/dev/null
+  > /etc/apt/sources.list.d/docker.list
 
 apt-get update -y
 
-# Force install/upgrade to latest from Docker repo
+# 3) Force install latest Docker CE + CLI + containerd + buildx
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
-apt-get install -y --only-upgrade docker-ce docker-ce-cli containerd.io docker-buildx-plugin || true
 
-# Enable BuildKit by default
+# 4) Enable BuildKit
 mkdir -p /etc/docker
 cat >/etc/docker/daemon.json <<'JSON'
 {
   "features": { "buildkit": true }
 }
 JSON
-
 # Ensure docker group exists + add jenkins
 getent group docker || groupadd docker
 usermod -aG docker jenkins
