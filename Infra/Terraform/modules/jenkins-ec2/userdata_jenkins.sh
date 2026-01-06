@@ -86,14 +86,14 @@ cat >/etc/docker/daemon.json <<'JSON'
 JSON
 
 # Let Jenkins run docker
-usermod -aG docker jenkins
+sudo usermod -aG docker jenkins
 
-systemctl enable docker
-systemctl daemon-reload
-systemctl restart docker
+sudo systemctl enable docker
+sudo systemctl daemon-reload
+sudo systemctl restart docker
 
 # Optional: make docker usable without logout/login for Jenkins
-systemctl restart jenkins || true
+sudo systemctl restart jenkins || true
 
 # -----------------------------
 # kubectl (client)
