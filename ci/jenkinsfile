@@ -47,20 +47,21 @@ pipeline {
         stage('📦 Docker Build & Security') {
             steps {
                 script {
-                    // ✅ IMPORTANT: your script does "docker build ... ./app/microservice"
-                    // So it must be executed from repo root, not inside app/microservice.
                     sh "bash ci/scripts/docker_build_push_ecr.sh ${FULL_IMAGE_URI}"
-
-                    // Scan the locally built image before pushing
-                    sh "bash ci/scripts/scan_trivy.sh ${FULL_IMAGE_URI}"
+                    def LOCAL_IMAGE = readFile('.local_image_name').trim()
+                    sh "bash ci/scripts/scan_trivy.sh ${LOCAL_IMAGE}"
                 }
             }
-        }
-
+        }   
         stage('🚢 Push to Amazon ECR') {
             steps {
-                sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
-                sh "docker push ${FULL_IMAGE_URI}"
+                script {
+                    def LOCAL_IMAGE = readFile('.local_image_name').trim()
+
+                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${ECR_REGISTRY}"
+                    sh "docker tag ${LOCAL_IMAGE} ${FULL_IMAGE_URI}"
+                    sh "docker push ${FULL_IMAGE_URI}"
+                }
             }
         }
 
