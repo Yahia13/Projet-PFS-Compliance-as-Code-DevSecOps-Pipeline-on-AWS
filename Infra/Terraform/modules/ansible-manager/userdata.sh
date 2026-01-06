@@ -135,10 +135,10 @@ WAIT_SECONDS=180
 INTERVAL=10
 ELAPSED=0
 
-echo " Waiting ~${WAIT_SECONDS}s before applying Ansible playbook..."
+echo " Waiting ~$${WAIT_SECONDS}s before applying Ansible playbook..."
 
 while [ "$ELAPSED" -lt "$WAIT_SECONDS" ]; do
-  echo "time  waited ${ELAPSED}s / ${WAIT_SECONDS}s"
+  echo "time  waited $${ELAPSED}s / $${WAIT_SECONDS}s"
   sleep "$INTERVAL"
   ELAPSED=$((ELAPSED + INTERVAL))
 done
