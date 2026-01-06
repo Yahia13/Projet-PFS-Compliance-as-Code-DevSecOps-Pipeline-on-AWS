@@ -59,35 +59,52 @@ resource "aws_iam_role" "jenkins_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
       Principal = { Service = "ec2.amazonaws.com" }
     }]
   })
 }
 
-# Politique combinée : ECR + EKS + S3
+# ---- Add these new variables in variables.tf (or pass them from root module) ----
+# var.ecr_repo_arn
+# var.tfstate_bucket_arn
+
 resource "aws_iam_policy" "jenkins_full_policy" {
   name        = "${var.project_name}-jenkins-devsecops-policy"
-  description = "Permissions pour ECR, EKS et l'archivage S3 des rapports"
+  description = "Permissions pour ECR, EKS, S3 reports + S3 Terraform backend"
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+
+      # ✅ ECR: Get login token must stay Resource="*"
       {
-        Sid    = "AllowECRPush"
+        Sid    = "AllowECRAuth"
+        Effect = "Allow"
+        Action = ["ecr:GetAuthorizationToken"]
+        Resource = "*"
+      },
+
+      # ✅ ECR: Push + Pull + Trivy needs BatchGetImage (you were missing it)
+      {
+        Sid    = "AllowECRPushPull"
         Effect = "Allow"
         Action = [
-          "ecr:GetAuthorizationToken",
           "ecr:BatchCheckLayerAvailability",
           "ecr:GetDownloadUrlForLayer",
+          "ecr:BatchGetImage",
           "ecr:InitiateLayerUpload",
           "ecr:UploadLayerPart",
           "ecr:CompleteLayerUpload",
-          "ecr:PutImage"
+          "ecr:PutImage",
+          "ecr:DescribeRepositories",
+          "ecr:ListImages"
         ]
-        Resource = "*"
+        Resource = var.ecr_repo_arn
       },
+
+      # ✅ EKS describe (needed for kubeconfig / deploy scripts)
       {
         Sid    = "AllowEKSDescribe"
         Effect = "Allow"
@@ -97,14 +114,43 @@ resource "aws_iam_policy" "jenkins_full_policy" {
         ]
         Resource = "*"
       },
+
+      # ✅ S3: audit reports upload (you already had PutObject+ListBucket)
+      # I recommend adding GetObject too (useful for debug / future steps)
       {
-        Sid    = "AllowS3AuditUpload"
+        Sid    = "AllowS3AuditBucket"
         Effect = "Allow"
-        Action = ["s3:PutObject", "s3:ListBucket"]
-        Resource = [
-          var.audit_bucket_arn,
-          "${var.audit_bucket_arn}/*"
+        Action = [
+          "s3:ListBucket"
         ]
+        Resource = var.audit_bucket_arn
+      },
+      {
+        Sid    = "AllowS3AuditObjects"
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject"
+        ]
+        Resource = "${var.audit_bucket_arn}/*"
+      },
+
+      # ✅ S3: Terraform backend bucket access (this fixes your 403 HeadObject error)
+      {
+        Sid    = "AllowTerraformStateBucketList"
+        Effect = "Allow"
+        Action = ["s3:ListBucket"]
+        Resource = var.tfstate_bucket_arn
+      },
+      {
+        Sid    = "AllowTerraformStateObjectsRW"
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject"
+        ]
+        Resource = "${var.tfstate_bucket_arn}/*"
       }
     ]
   })

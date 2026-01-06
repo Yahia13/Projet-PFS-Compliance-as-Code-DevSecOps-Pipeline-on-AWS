@@ -12,3 +12,6 @@ variable "ansible_files_bucket_arn" {
 }
 
 variable "ansible_ssh_key_param_arn" { type = string }
+
+variable "ecr_repo_arn" { type = string }
+variable "tfstate_bucket_arn" { type = string }

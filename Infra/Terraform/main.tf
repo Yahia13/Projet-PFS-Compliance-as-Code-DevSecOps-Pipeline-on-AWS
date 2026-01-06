@@ -34,6 +34,8 @@ module "iam" {
 
   ansible_ssh_key_param_arn = aws_ssm_parameter.ansible_ssh_key.arn
 
+  ecr_repo_arn         = module.ecr.repository_arn
+  tfstate_bucket_arn   = "arn:aws:s3:::s3-bucket-pfs-backup-tfstate-projets"
 
 }
 
