@@ -39,18 +39,59 @@
     state: present
     update_cache: yes
 
-- name: Disable Jenkins setup wizard
+# (Optional) Keep this, but it's not sufficient alone.
+- name: Disable Jenkins setup wizard (JAVA_ARGS)
   lineinfile:
     path: /etc/default/jenkins
     regexp: '^JAVA_ARGS='
-    line: 'JAVA_ARGS="-Djenkins.install.runSetupWizard=false"'
+    line: 'JAVA_ARGS="-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false"'
     create: yes
+  notify: Redémarrer Jenkins
 
-- name: Ensure Jenkins service is started and enabled
+# IMPORTANT: Stop Jenkins BEFORE writing first-run state files
+- name: Stop Jenkins before configuring first-run
   service:
     name: jenkins
-    state: started
-    enabled: yes
+    state: stopped
+
+- name: Get Jenkins version (for wizard state files)
+  shell: "dpkg -s jenkins | awk -F': ' '/^Version/{print $2}' | cut -d- -f1"
+  register: jenkins_version
+  changed_when: false
+
+- name: Ensure init.groovy.d exists
+  file:
+    path: /var/lib/jenkins/init.groovy.d
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: "0755"
+
+- name: Disable setup wizard via Groovy init (force INITIAL_SETUP_COMPLETED)
+  copy:
+    dest: /var/lib/jenkins/init.groovy.d/01-disable-setup-wizard.groovy
+    owner: jenkins
+    group: jenkins
+    mode: "0644"
+    content: |
+      import jenkins.model.Jenkins
+      import jenkins.install.InstallState
+
+      println "--> Forcing INITIAL_SETUP_COMPLETED"
+      Jenkins.get().setInstallState(InstallState.INITIAL_SETUP_COMPLETED)
+  notify: Redémarrer Jenkins
+
+- name: Write Jenkins wizard state files (prevents Customize Jenkins page)
+  copy:
+    dest: "/var/lib/jenkins/{{ item }}"
+    owner: jenkins
+    group: jenkins
+    mode: "0644"
+    content: "{{ jenkins_version.stdout }}"
+  loop:
+    - jenkins.install.InstallUtil.lastExecVersion
+    - jenkins.install.UpgradeWizard.state
+  notify: Redémarrer Jenkins
 
 - name: Ensure Jenkins plugins directory exists
   file:
@@ -74,6 +115,7 @@
     group: jenkins
     mode: "0644"
 
+# Install plugins BEFORE starting Jenkins
 - name: Install Jenkins plugins
   command: >
     java -jar /opt/jenkins-plugin-manager.jar
@@ -99,3 +141,10 @@
     recurse: yes
     owner: jenkins
     group: jenkins
+
+# Final: ensure Jenkins is running at the end
+- name: Ensure Jenkins service is started and enabled
+  service:
+    name: jenkins
+    state: started
+    enabled: yes

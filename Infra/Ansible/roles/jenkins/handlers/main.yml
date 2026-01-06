@@ -3,3 +3,14 @@
   service:
     name: jenkins
     state: restarted
+
+- name: Arrêter Jenkins
+  service:
+    name: jenkins
+    state: stopped
+
+- name: Démarrer Jenkins
+  service:
+    name: jenkins
+    state: started
+    enabled: yes
