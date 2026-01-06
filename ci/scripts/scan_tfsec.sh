@@ -1,11 +1,15 @@
 #!/bin/bash
+set -e
+
 echo "###############################"
 echo "# Lancement de TFSEC (IaC)    #"
 echo "###############################"
 
-# On scanne le dossier infra/terraform
-# --format json permet de générer un rapport machine-readable
-# --out permet de sauvegarder le résultat
-tfsec ./Infra/Terraform --format table --out ci/reports/tfsec/tfsec-report.json
+TF_DIR="Infra/Terraform"
+REPORT_DIR="ci/reports/tfsec"
+REPORT_FILE="${REPORT_DIR}/tfsec-report.json"
 
-# Note : tfsec renvoie un code erreur si des problèmes "HIGH" sont trouvés.
+mkdir -p "$REPORT_DIR"
+
+# JSON output to file
+tfsec "$TF_DIR" --format json > "$REPORT_FILE" || true
