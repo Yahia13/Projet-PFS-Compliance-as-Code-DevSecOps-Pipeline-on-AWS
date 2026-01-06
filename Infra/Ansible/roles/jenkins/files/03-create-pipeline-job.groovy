@@ -19,10 +19,10 @@ if (jenkins.getItem(jobName) != null) {
 println "--> Creating pipeline job: ${jobName}"
 
 // -------- EDIT THESE ----------
-def repoUrl = "https://github.com/Yahia13/Projet-PFS-Compliance-as-Code-DevSecOps-Pipeline-on-AWS"     // <-- change
+def repoUrl = "https://github.com/Yahia13/Projet-PFS-Compliance-as-Code-DevSecOps-Pipeline-on-AWS.git"     // <-- change
 def branch  = "*/yahia"                               // <-- change if needed
 def credId  = ""                                     // <-- put Jenkins credentials ID if private repo
-def jenkinsfilePath = "Jenkinsfile"                  // <-- your Jenkinsfile path
+def jenkinsfilePath = "ci/jenkinsfile"                  // <-- your Jenkinsfile path
 // -----------------------------
 
 def remote = new UserRemoteConfig(repoUrl, null, null, credId)
