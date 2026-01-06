@@ -131,7 +131,7 @@ ls -lah "$ANSIBLE_DIR/playbooks" || true
 # Simple wait before running Ansible
 # ----------------------------
 
-WAIT_SECONDS=300
+WAIT_SECONDS=180
 INTERVAL=10
 ELAPSED=0
 
