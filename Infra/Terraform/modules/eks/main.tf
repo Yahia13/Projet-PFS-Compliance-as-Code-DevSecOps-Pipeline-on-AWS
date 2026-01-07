@@ -9,6 +9,11 @@ resource "aws_eks_cluster" "this" {
     endpoint_private_access = true
     endpoint_public_access  = true
   }
+
+   # ✅ REQUIRED for EKS Access Entries
+  access_config {
+    authentication_mode = "API_AND_CONFIG_MAP"
+  }
 }
 
 # 2. Le Node Group (Les "Muscles" - Les serveurs de travail)
