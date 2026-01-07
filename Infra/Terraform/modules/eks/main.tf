@@ -15,10 +15,6 @@ resource "aws_eks_cluster" "this" {
     authentication_mode = "API_AND_CONFIG_MAP"
   }
 
-  # ✅ ensure Terraform deletes node groups first[it ensures that the cluster is deleted after the node groups]
-  #depends_on = [
-   # aws_eks_node_group.main
-  #]
 }
 
 # 2. Le Node Group (Les "Muscles" - Les serveurs de travail)
