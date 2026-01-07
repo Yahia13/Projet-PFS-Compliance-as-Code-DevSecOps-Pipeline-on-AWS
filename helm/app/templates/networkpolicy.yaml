@@ -1,11 +1,11 @@
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: "{{ include 'app.fullname' . }}-netpol"
+  name: "{{ include "app.fullname" . }}-netpol"
 spec:
   podSelector:
     matchLabels:
-      app: "{{ include 'app.name' . }}"
+      app: "{{ include "app.name" . }}"
   policyTypes:
     - Ingress
   ingress:
