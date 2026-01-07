@@ -12,6 +12,8 @@ module "eks" {
   
   eks_security_group_ids = [aws_security_group.eks_cluster_sg.id]
 
+  jenkins_role_arn = module.iam.jenkins_role_arn
+
 
   cluster_role_arn = module.iam.eks_cluster_role_arn
   node_role_arn    = module.iam.eks_nodes_role_arn

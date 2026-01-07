@@ -20,3 +20,6 @@ variable "node_role_arn" {
 variable "eks_security_group_ids" {
   type = list(string)
 }
+variable "jenkins_role_arn" {
+  type = string
+}
