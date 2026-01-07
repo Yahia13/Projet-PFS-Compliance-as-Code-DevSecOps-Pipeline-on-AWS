@@ -16,3 +16,6 @@ output "ansible_manager_role_arn" {
 output "ansible_manager_instance_profile_name" {
   value = aws_iam_instance_profile.ansible_manager_profile.name
 }
+output "jenkins_role_arn" {
+  value = aws_iam_role.jenkins_role.arn
+}
