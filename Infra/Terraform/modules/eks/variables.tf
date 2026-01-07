@@ -17,3 +17,6 @@ variable "cluster_role_arn" {
 variable "node_role_arn" {
   type = string
 }
+variable "eks_security_group_ids" {
+  type = list(string)
+}

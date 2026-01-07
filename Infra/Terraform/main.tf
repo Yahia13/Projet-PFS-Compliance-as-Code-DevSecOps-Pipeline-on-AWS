@@ -9,6 +9,9 @@ module "eks" {
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnet_ids
+  
+  eks_security_group_ids = [aws_security_group.eks_cluster_sg.id]
+
 
   cluster_role_arn = module.iam.eks_cluster_role_arn
   node_role_arn    = module.iam.eks_nodes_role_arn
