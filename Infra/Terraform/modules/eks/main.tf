@@ -14,6 +14,11 @@ resource "aws_eks_cluster" "this" {
   access_config {
     authentication_mode = "API_AND_CONFIG_MAP"
   }
+
+  # ✅ ensure Terraform deletes node groups first[it ensures that the cluster is deleted after the node groups]
+  depends_on = [
+    aws_eks_node_group.main
+  ]
 }
 
 # 2. Le Node Group (Les "Muscles" - Les serveurs de travail)
@@ -22,7 +27,6 @@ resource "aws_eks_node_group" "main" {
   node_group_name = "${var.project_name}-nodes"
   node_role_arn   = var.node_role_arn
   subnet_ids      = var.subnet_ids
-
   scaling_config {
     desired_size = 2
     max_size     = 3
