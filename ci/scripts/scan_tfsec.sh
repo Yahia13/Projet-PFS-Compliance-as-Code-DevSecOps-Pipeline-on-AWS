@@ -12,4 +12,4 @@ REPORT_FILE="${REPORT_DIR}/tfsec-report.json"
 mkdir -p "$REPORT_DIR"
 
 # JSON output to file
-tfsec "$TF_DIR" --format json > "$REPORT_FILE" || true
+tfsec "$TF_DIR" --format json --out "$REPORT_FILE" || true
