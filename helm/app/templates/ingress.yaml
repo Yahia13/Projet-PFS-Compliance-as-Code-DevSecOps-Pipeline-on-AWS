@@ -1,11 +1,11 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: "{{ include 'app.fullname' . }}-ingress"
+  name: "{{ include "app.fullname" . }}-ingress"
   annotations:
-    kubernetes.io/ingress.class: "alb"
     alb.ingress.kubernetes.io/scheme: "internet-facing"
 spec:
+  ingressClassName: alb
   rules:
     - http:
         paths:
@@ -13,6 +13,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: "{{ include 'app.fullname' . }}"
+                name: {{ include "app.fullname" . }}
                 port:
                   number: 80

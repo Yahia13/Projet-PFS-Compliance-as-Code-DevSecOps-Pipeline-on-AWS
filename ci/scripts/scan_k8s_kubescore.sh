@@ -1,9 +1,20 @@
 #!/bin/bash
+set -euo pipefail
+
 echo "####################################"
 echo "# Lancement de kube-score (K8s)    #"
 echo "####################################"
 
-# On génère le YAML à partir de Helm et on le passe à kube-score
-helm template my-release ./helm/app | kube-score score - \
-    --output-format human \
-    --ignore-test pod-networkpolicy # On ignore si on n'a pas encore fait les network policies
+CHART_DIR="./helm/app"              # adjust if needed
+RENDERED="ci/reports/kube-score/rendered.yaml"
+REPORT="ci/reports/kube-score/kube-score.txt"
+
+mkdir -p ci/reports/kube-score
+
+# Render chart into real YAML first
+helm template microservice-app "$CHART_DIR" > "$RENDERED"
+
+# Run kube-score on rendered output
+kube-score score "$RENDERED" > "$REPORT"
+
+echo "✅ kube-score report saved to $REPORT"

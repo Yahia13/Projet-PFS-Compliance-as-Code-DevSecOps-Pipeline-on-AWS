@@ -2,6 +2,8 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: "{{ include 'app.fullname' . }}-pdb"
+  labels:
+    app: "{{ include "app.name" . }}"
 spec:
   minAvailable: 1
   selector:

@@ -11,7 +11,7 @@ resource "aws_ecr_repository" "app_repo" {
   encryption_configuration {
     encryption_type = "AES256"
   }
-
+  force_delete         = true # This is the key argument to allow deletion of non-empty repos
   tags = {
     Name = "${var.project_name}-repo"
   }
