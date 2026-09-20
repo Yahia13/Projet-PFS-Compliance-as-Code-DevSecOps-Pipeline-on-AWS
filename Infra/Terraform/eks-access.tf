@@ -12,6 +12,9 @@ resource "aws_eks_access_policy_association" "jenkins_admin" {
   access_scope {
     type = "cluster"
   }
+  depends_on = [
+    aws_eks_access_entry.jenkins
+  ]
 }
 
 resource "aws_eks_access_entry" "console_admin" {
