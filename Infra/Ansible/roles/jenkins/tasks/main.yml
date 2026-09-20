@@ -27,10 +27,9 @@
     state: present
     update_cache: yes
 
-- name: Set Java 21 as the default
-  alternatives:
-    name: java
-    path: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+- name: Set Java 21 as default
+  command: update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+  changed_when: false
 
 - name: Add Jenkins apt repo (with signed-by)
   apt_repository:
