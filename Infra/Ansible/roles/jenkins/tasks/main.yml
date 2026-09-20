@@ -21,11 +21,16 @@
     - /etc/apt/sources.list.d/jenkins.list.save
     - /etc/apt/sources.list.d/pkg.jenkins.io_debian-stable.list
 
-- name: Install Java 17 (Ubuntu package)
+- name: Install Java 21
   apt:
-    name: openjdk-17-jre-headless
+    name: openjdk-21-jre-headless
     state: present
     update_cache: yes
+
+- name: Set Java 21 as the default
+  alternatives:
+    name: java
+    path: /usr/lib/jvm/java-21-openjdk-amd64/bin/java
 
 - name: Add Jenkins apt repo (with signed-by)
   apt_repository:
